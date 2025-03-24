@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect 
 from django.http import HttpResponse
 from posts.models import Post
-from posts.forms import PostCreateForm, PostCreateForm2
+from posts.forms import PostCreateForm, PostCreateForm2, SearchForm
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 
 
@@ -17,7 +18,35 @@ def home_page_view(request):
 @login_required(login_url="/login/")
 def post_list_view(request):
     posts = Post.objects.all()
-    return render(request, "posts/post_list.html", context = {"posts":posts})
+    limit = 3 
+    if request.method == "GET":
+        search = request.GET.get("search")
+        category = request.GET.get("category")
+        ordering = request.GET.get("ordering")
+        page = int(request.GET.get("page")) if request.GET.get("page") else 1
+        form = SearchForm(request.GET)
+        if search:
+            posts = posts.filter(Q(title__icontains=search) | Q(content__icontains=search))
+
+        if category:
+            posts = posts.filter(category=int(category ))
+        
+        if ordering:
+            posts = posts.order_by(ordering)
+
+        max_pages = posts.count() / limit
+        if round(max_pages) < max_pages:
+            max_pages = round(max_pages) + 1
+        else:
+            max_pages = round(max_pages)
+  
+        start = (page - 1) * limit
+        end =  page * limit
+        posts = posts[start:end]
+        context_data = {"posts":posts, 
+                        "form":form, 
+                        "max_pages": range(1, max_pages + 1)} 
+        return render(request, "posts/post_list.html", context = context_data)
 
 @login_required(login_url="/login/")
 def post_detail_view(request, post_id):

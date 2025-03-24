@@ -1,5 +1,5 @@
 from django import forms
-from posts.models import Post
+from posts.models import Post, Category
 
 
 class PostCreateForm(forms.Form):
@@ -44,3 +44,18 @@ class PostCreateForm2(forms.ModelForm):
         if title and content and title.lower() == content.lower():
             raise forms.ValidationError("Title and content cannot be the same")
         return cleaned_data
+
+
+class SearchForm(forms.Form):
+    search = forms.CharField(max_length=400, required=False)
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False, widget=forms.Select)
+    orderings = (
+        ("created_at", "По дате создания"),
+        ("-created_at", "По дате создания по убыванию"),
+        ("title", "По названию"),
+        ("-title", "По названию по убыванию"),
+        ("rate", "По рейтингу"),
+        ("-rate", "По рейтингу по убыванию"),
+        (None, "Без сортировки"),
+    )
+    ordering = forms.ChoiceField(choices=orderings, required=False)

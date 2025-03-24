@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 <body>
     {%block content%}
+    <form action="" method="get">
+      {{form.as_p}}
+      <button type="submit">Search</button>
+    </form>
     {%for post in posts%}
     <div class="card" style="width: 18rem;">
       {% if post.image %}
@@ -11,10 +15,19 @@
         <div class="card-body">
           <h5 class="card-title">{{ post.title }}</h5>
           <p class="card-text">{{ post.content }}</p>
+          <p class="card-text">{{ post.content }}</p>
+          <h4 class="card-title">Rate: {{post.rate}}</h4>
           <a href="/posts/{{post.id}}/" class="btn btn-primary">Go somewhere</a>
         </div>
       </div>
       {% endfor %}
+    <div style="display:flex; justify-content: center; margin-top: 20px; margin-bottom: 20px;">
+        {% for i in max_pages %}
+            <a href="/posts/?page={{ i }}" class="btn btn-primary">
+              {{i}}
+            </a>
+        {% endfor %}
+      </div>
       {%endblock%}
 </body>
 <footer>
