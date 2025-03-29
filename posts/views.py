@@ -4,11 +4,19 @@ from posts.models import Post
 from posts.forms import PostCreateForm, PostCreateForm2, SearchForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.views import View
+import random
+from django.views.generic import ListView, DetailView, CreateView
 
 
 
 def test_view(request):
     return HttpResponse("Hello World!")
+
+
+class TestView(View):
+    def get(self, request):
+        return HttpResponse("Hello World!", {random.randint(1, 100)})
 
 
 def home_page_view(request):
@@ -47,6 +55,16 @@ def post_list_view(request):
                         "form":form, 
                         "max_pages": range(1, max_pages + 1)} 
         return render(request, "posts/post_list.html", context = context_data)
+    
+
+
+
+class PostListView2(ListView):
+    model = Post
+    template_name = "posts/post_list.html"
+    context_object_name = "posts"
+
+
 
 @login_required(login_url="/login/")
 def post_detail_view(request, post_id):
@@ -71,3 +89,21 @@ def post_create_view(request):
             # post = Post.objects.create(title=title, content=content, image=image)
         # if post :
             return redirect("/posts/")
+        
+@login_required(login_url="/login/")
+def post_update_view(request, post_id):
+    post = Post.objects.filter(id=post_id, author=request.user).first()
+    if not post:
+        return HttpResponse("Post not found")
+    if request.method == "GET":
+        form = PostCreateForm2(instance=post)
+        return render (
+            request, "posts/post_update.html", context={"form":form}
+        )
+    if request.method == "POST":
+        form = PostCreateForm2(request.POST, request.FILES, instance=post)
+        if not form.is_valid():
+            return render(request, "posts/post_create.html", context={"form":form})
+        elif form.is_valid():
+            form.save()
+            return redirect("/profile/")

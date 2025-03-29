@@ -59,3 +59,4 @@ class SearchForm(forms.Form):
         (None, "Без сортировки"),
     )
     ordering = forms.ChoiceField(choices=orderings, required=False)
+
